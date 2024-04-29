@@ -1,0 +1,20 @@
+{
+  "name": "konani",
+  "author": "Congiary",
+  "dependencies": {
+    "@vk-io/session": "^2.1.0",
+    "axios": "^0.21.1",
+    "colors": "^1.4.0",
+    "dotenv": "^16.0.3",
+    "jimp": "^0.16.1",
+    "moment": "^2.29.1",
+    "node-cache": "^5.1.2",
+    "vk-io": "^4.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.30.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "mysql2": "^2.2.5"
+  }
+}
