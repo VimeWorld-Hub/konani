@@ -17,7 +17,9 @@ module.exports.info = {
     help: false
 };
 
-module.exports.run = async (context, delim, user) => {
+module.exports.run = async (context) => {
+    const delim = context.text.split(' ')
+
     if (delim.length < 2) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <никнейм>`)
 
     const symbols = delim[1].split('')
@@ -37,7 +39,6 @@ module.exports.run = async (context, delim, user) => {
         } catch (e) {
             console.error(e)
         }
-        //TODO: пофиксить команд
 
         context.reply({
             message: `📲 Никнейм успешно изменен\n└ Новый аккаунт: ${(rank.split('').length >= 1) ? `[${rank}] ` : ``}${player[0].username}`
@@ -50,7 +51,7 @@ module.exports.run = async (context, delim, user) => {
 
 module.exports.runPayload = async (context) => {
     try {
-        await this.run(context, context.messagePayload.split(':'))
+        await this.run(context)
     } catch (e) {
         context.reply(`При выполнении команды произошла ошибка`)
     }

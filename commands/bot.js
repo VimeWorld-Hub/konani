@@ -1,6 +1,6 @@
 const mysql = require('../libs/mysql')
 const config = require('../config')
-const {vk} = require('../index')
+const axios = require('axios')
 const vimeLibrary = require('../libs/vimelibrary')
 const {tasks} = require('../index')
 const {Keyboard} = require("vk-io");
@@ -12,7 +12,7 @@ module.exports.info = {
     usage: "",
     aliases: ['bot', 'бот', 'ботяра'],
     description: "общие сведения о текущем процессе бота",
-    permission: 3,
+    permission: 5,
     enabled: true,
     sponsor: [],
     help: true
@@ -21,11 +21,9 @@ module.exports.info = {
 module.exports.run = async (context) => {
     const pingVKTime = Date.now()
     try {
-        await vk.api.users.get({
-            user_ids: 1
-        });
+        await axios.get('https://api.vk.com')
     } catch (e) {
-        console.error(`[${Date.now() / 1000}] API VK is down`)
+
     }
     const pingVKDone = Date.now() - pingVKTime
 
@@ -43,7 +41,7 @@ module.exports.run = async (context) => {
     const chats = (await mysql.execute('SELECT COUNT(*) FROM chats'))[0]['COUNT(*)']
 
     context.reply({
-        message: `●━━━━∘ Konani ${process.env.PATCH} ∘━━━━●\n`
+        message: `●━━━━∘ Konani ${config.bot.version} ∘━━━━●\n`
             + `\n🔋 NodeJS: ${process.version}`
             + `\n🖨 Запущенные задачи: ${(tasks.length) > 0 ? tasks.join(', ') : 'отсутствуют'}`
             + `\n\n🐩 Пинг ВК: ${pingVKDone}мс`
@@ -65,7 +63,7 @@ module.exports.run = async (context) => {
 
 module.exports.runPayload = async (context) => {
     try {
-        await this.run(context, context.messagePayload.split(':'))
+        await this.run(context)
     } catch (e) {
         console.error(e)
         context.reply(`⚠ При выполнении команды произошла ошибка`)

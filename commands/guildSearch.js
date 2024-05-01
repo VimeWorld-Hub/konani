@@ -16,10 +16,12 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
-    if (!params[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} <ключевая фраза для поиска>`)
+module.exports.run = async (context, delim) => {
+    if (!delim) delim = context.text.split(" ")
 
-    if (params[1].split('').length < 2) {
+    if (!delim[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <ключевая фраза для поиска>`)
+
+    if (delim[1].split('').length < 2) {
         context.send({
             message: `🔍 Запрос для поиска должен быть длинее 2-ух символов.`,
             reply_to: context.message.id
@@ -27,8 +29,8 @@ module.exports.run = async (context, params) => {
         return
     }
 
-    const data = await VimeLibrary.search(encodeURIComponent(params[1]))
-    if (data.length < 1) return context.reply(`🔍 Гильдий по запросу «${params[1]}» - не найдено`)
+    const data = await VimeLibrary.search(encodeURIComponent(delim[1]))
+    if (data.length < 1) return context.reply(`🔍 Гильдий по запросу «${delim[1]}» - не найдено`)
 
     const g = ['']
 
@@ -38,7 +40,7 @@ module.exports.run = async (context, params) => {
 
     const header = (context.messagePayload)
         ? ''
-        : `🔍 Гильдии по запросу «${params[1]}»:\n\n`
+        : `🔍 Гильдии по запросу «${delim[1]}»:\n\n`
     const body = g.join("\n● ")
     const footer = `\n\n📃 Всего: ${g.length}`
 
@@ -48,7 +50,7 @@ module.exports.run = async (context, params) => {
         keyboard: Keyboard.builder()
             .textButton({
                 label: "📊 Обновить",
-                payload: `${this.info.name}:${params[1]}`,
+                payload: `${this.info.name}:${delim[1]}`,
                 color: Keyboard.SECONDARY_COLOR
             })
             .inline()

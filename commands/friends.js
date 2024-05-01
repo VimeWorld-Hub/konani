@@ -21,6 +21,17 @@ module.exports.run = async (context, delim) => {
 
     if (!delim[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <никнейм> <игра>?`)
 
+    if (delim[1].toLowerCase().includes("@me")) {
+        const get = await new messages.User().getNick(context)
+        if (get) {
+            delim[1] = get
+        } else {
+            return context.send({
+                message: `📲 Вы ещё не привязали свой никнейм.\n\nВоспользуйтесь командой: /setnick <ник>`,
+                reply_to: context.message.id
+            })
+        }
+    }
     const symbols = delim[1].split('')
     if (!await messages.testUsername(delim[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
 
@@ -73,5 +84,5 @@ module.exports.run = async (context, delim) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context, context.messagePayload.split(":"))
 };

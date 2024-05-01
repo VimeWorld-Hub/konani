@@ -47,5 +47,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

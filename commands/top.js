@@ -15,19 +15,21 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (!params || !params[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} ${this.info.usage}`)
+        if (!delim) delim = context.text.split(" ")
+
+        if (!delim || !delim[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <мини-игра>`)
 
         let season = false
 
-        if (params[1].toLowerCase().indexOf("_s") !== -1) {
-            params[1] = params[1].toLowerCase().replace("_s", "");
+        if (delim[1].toLowerCase().indexOf("_s") !== -1) {
+            delim[1] = delim[1].toLowerCase().replace("_s", "");
             season = true
         }
 
-        let game = await VimeUtils.getGamesAliases(params[1])
-        game = (game) ? game : params[1]
+        let game = await VimeUtils.getGamesAliases(delim[1])
+        game = (game) ? game : delim[1]
 
         if (season) {
             if (game == 'prison') game = game + "_season"
@@ -44,8 +46,8 @@ module.exports.run = async (context, params) => {
                 found = true
                 for (const s of g.sort) {
                     header = "🏅 " + g.description
-                    if (!params[2]) sort = g.sort[0]
-                    else if (params[2] == s) sort = s
+                    if (!delim[2]) sort = g.sort[0]
+                    else if (delim[2] == s) sort = s
                 }
             }
         }
@@ -55,7 +57,7 @@ module.exports.run = async (context, params) => {
         }
 
         if (sort == null) {
-            return context.reply(`🔎 У этой мини-игры нет сортировки по «${params[2]}»\n\n⚠ Если вы хотели проверить игрока в топе, то воспользуйтесь командой /tops (/tops ${params[2]})`)
+            return context.reply(`🔎 У этой мини-игры нет сортировки по «${delim[2]}»\n\n⚠ Если вы хотели проверить игрока в топе, то воспользуйтесь командой /tops (/tops ${delim[2]})`)
         }
 
         const top = await VimeLibrary.Leaderboard.get(game, sort, 100)
@@ -67,7 +69,6 @@ module.exports.run = async (context, params) => {
 
         await VimeUtils.rankCache()
         let n = 0
-        console.log(top)
         for (const player of top.records) {
             n++
             const rank = (await VimeUtils.getRank(player.user.rank)).prefix

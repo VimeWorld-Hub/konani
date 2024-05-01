@@ -8,7 +8,7 @@ module.exports.info = {
     usage: "",
     aliases: ['health', 'здоровье'],
     description: 'здоровье методов VimeWorld',
-    permission: 3,
+    permission: 5,
     enabled: true,
     sponsor: [],
     help: true
@@ -17,13 +17,13 @@ module.exports.info = {
 module.exports.run = async (context) => {
     const start = Date.now()
     await new Promise(() => {
-        const promise1 = VimeLibrary.User.get("xtrafrancyz", 'nick');
-        const promise2 = VimeLibrary.User.get(134568, 'id')
-        const promise3 = VimeLibrary.User.friends("xtrafrancyz", "nick")
-        const promise4 = VimeLibrary.User.session("xtrafrancyz", "nick")
-        const promise5 = VimeLibrary.User.stats("xtrafrancyz", "nick")
-        const promise6 = VimeLibrary.User.leaderboards("xtrafrancyz", "nick")
-        const promise7 = VimeLibrary.User.achievements("xtrafrancyz", "nick")
+        var promise1 = VimeLibrary.User.get("xtrafrancyz", 'nick')
+        var promise2 = VimeLibrary.User.get(134568, 'id')
+        var promise3 = VimeLibrary.User.friends("xtrafrancyz", "nick")
+        var promise4 = VimeLibrary.User.session("xtrafrancyz", "nick")
+        var promise5 = VimeLibrary.User.stats("xtrafrancyz", "nick")
+        var promise6 = VimeLibrary.User.leaderboards("xtrafrancyz", "nick")
+        var promise7 = VimeLibrary.User.achievements("xtrafrancyz", "nick")
 
         Promise.all([promise1, promise2, promise3, promise4, promise5, promise6, promise7]).then(function (values) {
             const methods = []
@@ -59,5 +59,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

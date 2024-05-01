@@ -3,6 +3,7 @@ const config = require('../config')
 const axios = require('axios')
 const {Keyboard} = require('vk-io')
 const moment = require('moment')
+const mysql = require('../libs/mysql')
 
 const VimeLibrary = new VW.Total(config.vimeworld.dev_token)
 const VimeUtils = new VW.Utils()
@@ -18,44 +19,63 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
-    params[1] = params.slice(1).join(' ')
+module.exports.run = async (context, delim) => {
+    const data = context.text
+    if (!delim) delim = data.split(" ");
+    let guild = (delim[0] === 'guild') ? '=' + delim[1] : data.split(`${delim[0]} `)[1]
 
-    if (params.length < 2) {
+
+    if (delim.length < 2) {
         context.send({
-            message: `🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} <гильдия>`,
+            message: `🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <гильдия>`,
             reply_to: context.message.id
         });
         return
     }
 
+    if (delim[1].toLowerCase().includes("@me")) {
+        const user = await mysql.execute(`SELECT * FROM users WHERE id = ?`, [context.message.from_id])
+
+        if (!user[0]) {
+            guild = "-"
+        } else {
+            guild = '=' + user[0].guild;
+        }
+
+        if (guild == "-1") {
+            context.send({
+                message: `📲 Вы ещё не добавили свою гильдию.\n\nВоспользуйтесь командой: /setguild <ник>`,
+                reply_to: context.message.id
+            })
+            return;
+        }
+    }
 
     let inv = ""
     let type = ""
     let type_friendly = ""
-
-    switch ((params[1].charAt(0))) {
+    switch ((guild.charAt(0))) {
         case "+":
-            params[1] = params[1].split("+")[1]
+            guild = guild.split("+")[1]
             type = "name";
             type_friendly = "названия";
             break;
         case "-":
-            params[1] = params[1].split("-")[1]
+            guild = guild.split("-")[1]
             type = "tag";
             type_friendly = "тега";
             break;
         case "=":
-            params[1] = params[1].split("=")[1]
+            guild = guild.split("=")[1]
             type = "id";
             type_friendly = "айди";
             break;
         default:
             inv = "\n\n⚠️ Возможно, Вы видите информацию о другой гильдии, поскольку не уточнили, по какому из параметров идет поиск: для повышения точности, используйте префиксы: +название, =айди, -тег"
-            if (params[1].match(/^[0-9]+$/)) {
+            if (guild.match(/^[0-9]+$/)) {
                 type = "id";
                 type_friendly = "айди";
-            } else if (params[1].split("").length <= 5) {
+            } else if (guild.split("").length <= 5) {
                 type = "tag";
                 type_friendly = "тега";
             } else {
@@ -65,14 +85,15 @@ module.exports.run = async (context, params) => {
             break;
     }
 
-    const response = await VimeLibrary.Guild.get(encodeURIComponent(params[1]), type)
+    const response = await VimeLibrary.Guild.get(encodeURIComponent(guild), type)
 
     let officers = 0
     let players = 0
-    let leader;
+    let total_levels = 0;
     if (response && response.id) {
         await VimeUtils.rankCache(config.vimeworld.dev_token)
         for (let i = 0; i !== response.members.length; i++) {
+            total_levels += response.members[i].user.level;
             if (response.members[i].status === "LEADER") {
                 const rank = await VimeUtils.getRank(response.members[i].user.rank)
                 leader = `${(rank.prefix.split('').length >= 1) ? `[${rank.prefix}] ` : ``}${response.members[i].user.username}`
@@ -101,17 +122,17 @@ module.exports.run = async (context, params) => {
             perks.push(`${response.perks[perk].name}: ${response.perks[perk].level}`)
         }
 
-        // let info = await mysql.execute(`SELECT * FROM guilds WHERE id = ?`, [response.id])
-        // const {session} = context;
-        // let views = 0
+        let info = await mysql.execute(`SELECT * FROM guilds WHERE id = ?`, [response.id])
+        const {session} = context;
+        let views = 0
 
-        // if (!session[response.id]) mysql.execute(`UPDATE guilds SET views = views+1 WHERE id = ?`, [response.id])
-        // session[response.id] = true
-        // if (!info[0]) {
-        //     await mysql.execute(`insert into guilds(id) values(?)`, [response.id])
-        // } else {
-        //     info[0].views + 1
-        // }
+        if (!session[response.id]) mysql.execute(`UPDATE guilds SET views = views+1 WHERE id = ?`, [response.id])
+        session[response.id] = true
+        if (!info[0]) {
+            await mysql.execute(`insert into guilds(id) values(?)`, [response.id])
+        } else {
+            views = info[0].views + 1
+        }
         context.send({
             message: `🏹 ${tag}${response.name}`
                 + `\nЛидер: ${leader}`
@@ -189,12 +210,9 @@ module.exports.run = async (context, params) => {
     }
 };
 
-module.exports.runPayload = async (context, params) => {
-    if (params[1] === 'view') {
-        params[1] = `=${params[2]}`
-        return this.run(context, params)
-    }
-    const response = await VimeLibrary.Guild.get(encodeURIComponent(params[1]), "id")
+module.exports.runPayload = async (context) => {
+    const delim = context.messagePayload.split(":")
+    const response = await VimeLibrary.Guild.get(encodeURIComponent(delim[1]), "id")
 
     if (!response.id) return context.reply(`🔎 Гильдия пропала`)
 
@@ -218,7 +236,7 @@ module.exports.runPayload = async (context, params) => {
         }
     }
 
-    switch (params[2]) {
+    switch (delim[2]) {
         case 'web_info':
             if (response.web_info == null) {
                 return context.reply({
@@ -277,7 +295,7 @@ module.exports.runPayload = async (context, params) => {
         case 'members':
             return context.reply(`👨‍💻 Участники гильдии «${response.name}»:\n${members}\n\n📃 Всего участников: ${members_count}`)
         default:
-            params[1] = `${params[1]}`
-            return this.run(context, context.messagePayload.split(':'))
+            delim[1] = `${delim[1]}`
+            return this.run(context, delim)
     }
 };

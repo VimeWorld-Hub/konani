@@ -1,24 +1,22 @@
+const config = require('./config')
 const { VK } = require('vk-io')
+const { SessionManager } = require('@vk-io/session')
 const fs = require('fs')
-require('dotenv').config();
 
 const vk = new VK({
-    token: process.env.BOT_TOKEN,
+    token: (config.bot.debug === true) ? config.bot.token.debug : config.bot.token.release,
     apiLimit: 20,
     apiMode: "sequential",
 })
 
 module.exports.vk = vk
 
-// const sessionManager = new SessionManager()
+const sessionManager = new SessionManager()
 module.exports.tasks = []
 
-// vk.updates.on('message_new', sessionManager.middleware)
-const messages = require('./listeners/messages')
-// messages.new(fakeContext)
+vk.updates.on('message_new', sessionManager.middleware)
 vk.updates.on('message_new', async (context, next) => {
-    // require('./listeners/message_new').run(context)
-    await messages.newMessage(context)
+    require('./listeners/message_new').run(context)
     next()
 })
 

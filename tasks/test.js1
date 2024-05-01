@@ -1,0 +1,30 @@
+const config = require('../config')
+
+class Task{
+    constructor(name, interval) {
+        this.run = false
+        this.name = name
+        this.interval = interval
+
+        setInterval(this.execute, this.interval)
+    }
+
+    async execute(){
+        try{
+            this.run = true
+            console.log('Hello, World!')
+        }
+        catch (e) {
+            this.run = false
+            console.error(e)
+        }
+    }
+
+    async getName(){
+        return this.name
+    }
+
+    async getInverval(){
+        return this.interval
+    }
+}

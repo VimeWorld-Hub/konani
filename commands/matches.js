@@ -19,16 +19,29 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (params[1]) {
-            const symbols = params[1].split('')
-            if (!await messages.testUsername(params[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
+        if (!delim) delim = context.text.split(" ")
+
+        if (delim[1]) {
+            const symbols = delim[1].split('')
+            if (delim[1].toLowerCase().includes("@me")) {
+                const get = await new messages.User().getNick(context)
+                if (get) {
+                    delim[1] = get
+                } else {
+                    return context.send({
+                        message: `📲 Вы ещё не привязали свой никнейм.\n\nВоспользуйтесь командой: /setnick <ник>`,
+                        reply_to: context.message.id
+                    })
+                }
+            }
+            if (!await messages.testUsername(delim[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
 
             if ((symbols.length < 3 || symbols.length > 16) && symbols[0] !== "=")
                 return context.reply(`⚠ Никнейм должен быть длиной от 3-х до 16-и символов`)
 
-            const res = await VimeUser.matches(params[1], 'nick')
+            const res = await VimeUser.matches(delim[1], 'nick')
             if (!res || !res.user) return context.reply(`🔎 Игрока с таким никнеймом не существует`)
             else if (res.matches.length < 1) return context.reply(`🔎 У игрока нет последних матчей`)
 

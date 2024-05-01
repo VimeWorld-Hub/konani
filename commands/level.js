@@ -9,9 +9,10 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
-    const data = params[1]
-    if (!data) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} <уровень>`)
+module.exports.run = async (context) => {
+    const delim = context.text.split(' ')
+    const data = delim[1]
+    if (!data) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <уровень>`)
     const levels = {
         1: "● 4000 коинов",
         2: "● Сундук нуба 3 шт.",
@@ -94,5 +95,5 @@ module.exports.run = async (context, params) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

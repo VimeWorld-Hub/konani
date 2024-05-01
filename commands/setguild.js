@@ -42,7 +42,7 @@ module.exports.run = async (context) => {
 
 module.exports.runPayload = async (context) => {
     try {
-        await this.run(context, context.messagePayload.split(':'))
+        await this.run(context)
     } catch (e) {
         console.error(e)
         context.reply(`⚠ При выполнении команды произошла ошибка.\n\n${e}`)

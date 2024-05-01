@@ -12,9 +12,10 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
+    if (!delim) delim = context.text.split(' ')
     try {
-        if (!params[1]) {
+        if (!delim[1]) {
             context.send({
                 message: `📊 Выберите Модовый сервер, информацию о котором Вы хотите просмотреть:`,
                 reply_to: context.message.id,
@@ -62,7 +63,7 @@ module.exports.run = async (context, params) => {
             return
         }
         const servers = await axios.get(`http://launcher.vimeworld.com/data/servers.php`)
-        params = params[1]
+        delim = delim[1]
         const info = {
             vime: {
                 smile: "🛸",
@@ -159,7 +160,7 @@ module.exports.run = async (context, params) => {
             },
         }
 
-        if (!info[params.toLowerCase()]) {
+        if (!info[delim.toLowerCase()]) {
             return context.send({
                 message: `💔 Сервера не существует`,
                 reply_to: context.message.id,
@@ -167,16 +168,16 @@ module.exports.run = async (context, params) => {
         }
 
         context.send({
-            message: `${info[params.toLowerCase()].smile} {${info[params.toLowerCase()].pvp}} ${info[params.toLowerCase()].name}`
-                + `\nВерсия: ${info[params.toLowerCase()].version}`
-                + `\nРежим: ${info[params.toLowerCase()].base}`
+            message: `${info[delim.toLowerCase()].smile} {${info[delim.toLowerCase()].pvp}} ${info[delim.toLowerCase()].name}`
+                + `\nВерсия: ${info[delim.toLowerCase()].version}`
+                + `\nРежим: ${info[delim.toLowerCase()].base}`
                 // + `\nСледующий рестарт: ${restart}\n`
-                + `\n\n🎫 Описание: ${info[params.toLowerCase()].desc}`
-                + `\n💻 IP: ${info[params.toLowerCase()].host}:${info[params.toLowerCase()].port}`
+                + `\n\n🎫 Описание: ${info[delim.toLowerCase()].desc}`
+                + `\n💻 IP: ${info[delim.toLowerCase()].host}:${info[delim.toLowerCase()].port}`
                 + `\n\n📂 Разделы:`
-                + `\n● Жалобы: ${info[params.toLowerCase()].violations}`
-                + `\n● Идеи: ${info[params.toLowerCase()].idea}`
-                + `\n● Заявки: ${info[params.toLowerCase()].personal}`,
+                + `\n● Жалобы: ${info[delim.toLowerCase()].violations}`
+                + `\n● Идеи: ${info[delim.toLowerCase()].idea}`
+                + `\n● Заявки: ${info[delim.toLowerCase()].personal}`,
             reply_to: context.message.id,
             dont_parse_links: true,
         })

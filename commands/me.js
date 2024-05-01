@@ -1,7 +1,9 @@
+const mysql = require('../libs/mysql')
 const config = require('../config')
 const VW = require('../libs/vimelibrary')
 
 const VimeLibrary = new VW.Guild(config.vimeworld.dev_token)
+const vk = require('../index').vk
 
 
 module.exports.info = {
@@ -15,20 +17,19 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params, user) => {
+module.exports.run = async (context) => {
     try {
-        let guild
-        try {
-            guild = (user.getGuildId()) ? (await VimeLibrary.get(user.getGuildId(), 'id')).name : 'Отсутствует'
-        } catch (e) {
-            guild = 'Отсутствует'
-        }
+        const info = await mysql.execute('SELECT * FROM users WHERE id = ?', [context.senderId])
+
+        const guild = (info[0].guild !== -1) ? (await VimeLibrary.get(info[0].guild, 'id')).name : 'Отсутствует'
+        const username = (info[0].username != '-1' && info[0].username != 'null') ? info[0].username : 'Отсутствует'
+        const user_name = await vk.api.users.get({user_id: context.message.from_id})
 
         context.reply({
-            //`●━━━━∘ [id${context.message.from_id}|${user_name[0].first_name} ${user_name[0].last_name}] ∘━━━━●`
-            message: `●━━━━∘ ${user.rank} ∘━━━━●`
+            message: `●━━━━∘ [id${context.message.from_id}|${user_name[0].first_name} ${user_name[0].last_name}] ∘━━━━●`
+                + `\n\n🔧 Префикс: ${info[0].prefix}`
                 //+ `\n⌚  Смайлик: 🍕`
-                + `\n\n👨‍💻 Никнейм: ${(user.getUsername()) ? user.getUsername() : 'Отсутствует'}`
+                + `\n\n👨‍💻 Никнейм: ${username}`
                 + `\n🏹 Гильдия: ${guild}`,
             disable_mentions: 1,
             dont_parse_links: 1
@@ -39,9 +40,9 @@ module.exports.run = async (context, params, user) => {
     }
 };
 
-module.exports.runPayload = async (context, params) => {
+module.exports.runPayload = async (context) => {
     try {
-        await this.run(context, params)
+        await this.run(context)
     } catch (e) {
         console.error(e)
         context.reply(`⚠ При выполнении команды произошла ошибка\n\n${e}`)

@@ -11,9 +11,9 @@ class Request {
             }
         });
 
-        if (req.data.error) {
-            throw `API вернул ошибку: ${req.data.error.error_msg}`;
-        }
+//        if (req.data.error) {
+//            throw `API вернул ошибку: ${req.data.error.error_msg}`;
+//        }
 
         req.data['token'] = {
             'remaining': req?.headers["x-ratelimit-remaining"],

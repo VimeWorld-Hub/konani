@@ -11,9 +11,11 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (!params[1] || params[1] <= 0) {
+        if (!delim) delim = context.text.split(" ")
+
+        if (!delim[1] || delim[1] <= 0) {
             return context.reply("⚠ ID исключаемого участника должен быть целым положительным числом")
         }
 
@@ -31,8 +33,8 @@ module.exports.run = async (context, params) => {
         try {
             await vk.api.messages.removeChatUser({
                 chat_id: context.peerId % 2000000000,
-                user_id: params[1],
-                member_id: params[1]
+                user_id: delim[1],
+                member_id: delim[1]
             })
             context.reply("🐈 Пушистый гей залоБАНен")
         } catch (e) {
@@ -49,5 +51,5 @@ module.exports.run = async (context, params) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

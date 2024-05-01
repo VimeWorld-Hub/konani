@@ -21,27 +21,39 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (!params || !params[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} <никнейм> <игра>?`)
+        delim = (!delim) ? context.text.split(" ") : delim
+        if (!delim || !delim[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <никнейм> <игра>?`)
 
-        const symbols = params[1].split('')
-        if (!await messages.testUsername(params[1]) && /[=]/.test((symbols.length >= 1) ? symbols[0] : '') === false) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
+        if (delim[1].toLowerCase().includes("@me")) {
+            const get = await new messages.User().getNick(context)
+            if (get) {
+                delim[1] = get
+            } else {
+                return context.send({
+                    message: `📲 Вы ещё не привязали свой никнейм.\n\nВоспользуйтесь командой: /setnick <ник>`,
+                    reply_to: context.message.id
+                })
+            }
+        }
+        const symbols = delim[1].split('')
+        if (!await messages.testUsername(delim[1]) && /[=]/.test((symbols.length >= 1) ? symbols[0] : '') === false) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
 
-        if (symbols.length < 2 && symbols[0] === "=")
-            return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} <=айди> <игра>?`)
+        if (symbols.length < 2 && symbols[0] == "=")
+            return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <=айди> <игра>?`)
 
-        if ((symbols.length < 3 || symbols.length > 16) && symbols[0] !== "=" && params[1].split(',').length <= 1)
+        if ((symbols.length < 3 || symbols.length > 16) && symbols[0] !== "=" && delim[1].split(',').length <= 1)
             return context.reply(`⚠ Никнейм должен быть длиной от 3-х до 16-и символов`)
 
         let accountInformation = false;
         try {
-            accountInformation = (await axios.get('https://cp.vimeworld.com/api/user?register=1&name=' + params[1])).data
+            accountInformation = (await axios.get('https://cp.vimeworld.com/api/user?register=1&name=' + delim[1])).data
         } catch (e) {
             console.error(e)
         }
 
-        const player = (symbols.length >= 2 && symbols[0] === "=") ? await VimeLibrary.get(params[1].split('').slice(1).join(''), "id") : await VimeLibrary.get(params[1], "nick")
+        const player = (symbols.length >= 2 && symbols[0] === "=") ? await VimeLibrary.get(delim[1].split('').slice(1).join(''), "id") : await VimeLibrary.get(delim[1], "nick")
         if (!player[0]) {
             const exits = accountInformation?.response?.exists;
             const available = accountInformation?.response?.available;
@@ -67,11 +79,11 @@ module.exports.run = async (context, params) => {
         for (let i = 0; i !== max; i++) {
             try {
                 await mysql.execute('INSERT INTO `players`(`player`, `viewer`) VALUES (?, ?)', [player[i].id, context.senderId])
-            } catch (e) { /* empty */
+            } catch (e) {
             }
             new Promise(() => {
                 const promise1 = VimeLibrary.achievements(player[i].id, "id")
-                const promise2 = (params[2]) ? VimeLibrary.stats(player[i].id, "id") : [];
+                const promise2 = (delim[2]) ? VimeLibrary.stats(player[i].id, "id") : [];
                 const promise3 = VimeLibrary.session(player[i].id, "id")
                 const promise4 = VimeLibrary.friends(player[i].id, "id")
                 const promise5 = VimeLibrary.leaderboards(player[i].id, "id")
@@ -109,7 +121,7 @@ module.exports.run = async (context, params) => {
                             })
                             .textButton({
                                 label: "🏹 Гильдия",
-                                payload: `guild:view:${values[0].user.guild.id}`,
+                                payload: `guild:${values[0].user.guild.id}`,
                                 color: Keyboard.PRIMARY_COLOR
                             })
                             .row()
@@ -201,7 +213,7 @@ module.exports.run = async (context, params) => {
                             keyboard: keyboard
                         })
                     } else {
-                        let g = params[2];
+                        let g = delim[2];
                         let type_stats = "Global";
 
                         if (g.toLowerCase().indexOf("_s") !== -1) {
@@ -254,9 +266,11 @@ module.exports.run = async (context, params) => {
     }
 };
 
-module.exports.runPayload = async (context, params) => {
+module.exports.runPayload = async (context) => {
+    const delim = context.messagePayload.split(':')
+
     try {
-        await this.run(context, params)
+        await this.run(context, delim)
     } catch (e) {
         console.error(e)
         context.reply(`⚠ При выполнении команды (payload) произошла ошибка`)

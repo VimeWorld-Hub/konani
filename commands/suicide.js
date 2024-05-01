@@ -5,7 +5,7 @@ module.exports.info = {
     usage: "<айди ВК>",
     aliases: ['suicide'],
     description: 'удаление участника по ID',
-    permission: 3,
+    permission: 5,
     enabled: false,
     sponsor: [2000000001, 2000000058],
     help: false
@@ -34,5 +34,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

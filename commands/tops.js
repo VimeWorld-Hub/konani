@@ -17,17 +17,30 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (!params || !params[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} ${this.info.usage}`)
+        if (!delim) delim = context.text.split(" ")
 
-        const symbols = params[1].split('')
-        if (!await messages.testUsername(params[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
+        if (!delim || !delim[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} ${this.info.usage}`)
+
+        if (delim[1].toLowerCase().includes("@me")) {
+            const get = await new messages.User().getNick(context)
+            if (get) {
+                delim[1] = get
+            } else {
+                return context.send({
+                    message: `📲 Вы ещё не привязали свой никнейм.\n\nВоспользуйтесь командой: /setnick <ник>`,
+                    reply_to: context.message.id
+                })
+            }
+        }
+        const symbols = delim[1].split('')
+        if (!await messages.testUsername(delim[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
 
         if ((symbols.length < 3 || symbols.length > 16) && symbols[0] !== "=")
             return context.reply(`⚠ Никнейм должен быть длиной от 3-х до 16-и символов`)
 
-        const player = await VimeLibrary.leaderboards(params[1], "nick")
+        const player = await VimeLibrary.leaderboards(delim[1], "nick")
         if (!player.user || !player.user.id) return context.reply('🔎 Игрока с таким никнеймом - не существует')
 
         const topList = ['']
@@ -65,5 +78,6 @@ module.exports.run = async (context, params) => {
 }
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    const delim = context.messagePayload.split(':')
+    this.run(context, delim)
 }

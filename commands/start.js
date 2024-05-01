@@ -14,8 +14,10 @@ module.exports.info = {
 
 module.exports.run = async (context) => {
     if (context.isChat) return
-    
+    const u = await mysql.execute(`SELECT * FROM users WHERE id = ?`, [context.senderId])
+
     try {
+        if (!u[0] || !u[0]['id']) await mysql.execute(`insert into users(id) values(?)`, context.senderId)
         await context.send({
             message: '🔮 Приветствую, я - бот, который поможет тебе на VimeWorld\n'
                 + `\nВот мои основные команды:`
@@ -40,5 +42,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

@@ -1,7 +1,7 @@
 module.exports.info = {
     name: 'ship',
     usage: "<аргумент1> | <аргумент2>",
-    aliases: ['ship', 'шип', 'shiр'],
+    aliases: ['ship', 'шип'],
     description: 'вероятность любви',
     permission: 1,
     enabled: true,
@@ -9,19 +9,19 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (!params[1])
+        if (!delim) delim = context.text.split(' ')
+
+        if (!delim[1])
             return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: /ship ${this.info.usage}`)
 
-        const ship = context.text.split(params[0])[1].split("|")
+        const ship = context.text.split(delim[0])[1].split("|")
 
         if (!ship[0] || !ship[1])
             return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: /ship ${this.info.usage}`)
 
-        const percent = (params[0] === '/shiр') ? randomInteger(90, 99) : randomInteger(1, 99)
-
-        context.reply(`💚 Вероятность любви между «${ship[0].trim()}» и «${ship[1].trim()}» - ${percent}%`)
+        context.reply(`💚 Вероятность любви между «${ship[0].trim()}» и «${ship[1].trim()}» - ${Math.floor(Math.random() * 99)}%`)
     } catch (e) {
         context.reply(`🗿 чо-т сломалось: ${e}`)
         console.error(e)
@@ -29,10 +29,5 @@ module.exports.run = async (context, params) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };
-
-function randomInteger(min, max) {
-    let rand = min - 0.5 + Math.random() * (max - min + 1);
-    return Math.round(rand);
-}

@@ -15,9 +15,11 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (!params[1]) {
+        if (!delim) delim = context.text.split(" ")
+
+        if (!delim[1]) {
             return context.reply({
                 message: `Выберите топ гильдий:`,
                 keyboard: Keyboard.builder()
@@ -38,7 +40,7 @@ module.exports.run = async (context, params) => {
         let res
 
 
-        switch (params[1]) {
+        switch (delim[1]) {
             case 'c':
             case 'coins':
             case 'к':

@@ -3,7 +3,7 @@ module.exports.info = {
     usage: "",
     aliases: ['payload'],
     description: 'payload message',
-    permission: 3,
+    permission: 5,
     enabled: true,
     sponsor: [],
     help: true
@@ -15,5 +15,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

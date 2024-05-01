@@ -8,7 +8,7 @@ module.exports.info = {
 
 module.exports.run = async () => {
     try{
-        if(!status) console.log(`[Konani] Задача "${module.exports.info.name}" запущена`)
+        if(!status) console.log(`[Konani] Задача \"${module.exports.info.name}\" запущена`)
         status = true
     }
     catch (e) {

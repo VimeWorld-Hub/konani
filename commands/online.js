@@ -27,7 +27,7 @@ module.exports.run = async (context) => {
 
     await VimeUtils.gamesCache(config.vimeworld.dev_token)
     for (const game in online) {
-        if (game.toLowerCase() === "zombieclaus" && (new Date(Date.now())).getMonth() - 1 !== 11 && (new Date(Date.now())).getMonth() - 1 > 1) continue
+       // if (game.toLowerCase() === "zombieclaus" && (new Date(Date.now())).getMonth() - 1 !== 11 && (new Date(Date.now())).getMonth() - 1 > 1) continue
 
         let rus = await VimeUtils.getGame(game, config.vimeworld.dev_token)
 
@@ -60,5 +60,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

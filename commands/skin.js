@@ -22,24 +22,37 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (!params[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} <никнейм> <игра>?`)
+        if (!delim) delim = context.text.split(' ')
 
-        const symbols = params[1].split('')
-        if (!await messages.testUsername(params[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
+        if (!delim[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} <никнейм> <игра>?`)
+
+        if (delim[1].toLowerCase().includes("@me")) {
+            const get = await new messages.User().getNick(context)
+            if (get) {
+                delim[1] = get
+            } else {
+                return context.send({
+                    message: `📲 Вы ещё не привязали свой никнейм.\n\nВоспользуйтесь командой: /setnick <ник>`,
+                    reply_to: context.message.id
+                })
+            }
+        }
+        const symbols = delim[1].split('')
+        if (!await messages.testUsername(delim[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
 
         if ((symbols.length < 3 || symbols.length > 16) && symbols[0] !== "=")
             return context.reply(`⚠ Никнейм должен быть длиной от 3-х до 16-и символов`)
 
-        const data = await VimeLibrary.get(params[1], 'nick')
+        const data = await VimeLibrary.get(delim[1], 'nick')
         if (!data[0] || !data[0].id) {
             return context.reply('🔎 Игрока с таким никнеймом - не существует')
         }
         const rank = await VimeUtils.getRank(data[0].rank, config.vimeworld.dev_token)
 
-        const body = axios.get(`http://skin.vimeworld.com/body/${data[0].username}.png`, {responseType: 'arraybuffer'});
-        let back = axios.get(`http://skin.vimeworld.com/back/${data[0].username}.png`, {responseType: 'arraybuffer'})
+        var body = axios.get(`http://skin.vimeworld.com/body/${data[0].username}.png`, {responseType: 'arraybuffer'})
+        var back = axios.get(`http://skin.vimeworld.com/back/${data[0].username}.png`, {responseType: 'arraybuffer'})
 
         Promise.all([body, back]).then(function (values) {
             Promise.all([
@@ -47,7 +60,7 @@ module.exports.run = async (context, params) => {
                 Jimp.read(values[1].data),
             ])
                 .then(async function (results) {
-                    let cape = await axios.get(`https://skin.vimeworld.com/cape/${data[0].username}.png`, {
+                    var cape = await axios.get(`https://skin.vimeworld.com/cape/${data[0].username}.png`, {
                         validateStatus: false,
                         responseType: 'arraybuffer'
                     })

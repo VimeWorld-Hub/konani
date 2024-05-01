@@ -15,7 +15,7 @@ async function execute(query, params = []) {
         connection.query(
             query,
             params,
-            function(err, results) {
+            function(err, results, fields) {
                 if(err) return reject(err.stack);
                 resolve(results);
             }

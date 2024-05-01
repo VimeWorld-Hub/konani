@@ -9,7 +9,7 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context) => {
+module.exports.run = async (context, delim) => {
     const arr = Array("Падает комп с виндой с 16-го этажа и думает: \"Вот сейчас бы зависнуть\"",
         "Вчера отвёл душу... Сегодня не могу вспомнить куда!?..",
         "Если вы нашли ошибку в тексте бота, выделите её мышкой и нажмите Alt+F4",
@@ -123,5 +123,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

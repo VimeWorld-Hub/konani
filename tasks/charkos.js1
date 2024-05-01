@@ -1,0 +1,32 @@
+const axios = require("axios");
+const {vk} = require("../index");
+let status = false
+
+module.exports.info = {
+    name: 'charkos_checker',
+    update: 500 * 1000,
+    enabled: true
+};
+
+module.exports.run = async () => {
+    try {
+        if (!status) console.log(`[Konani] Задача "${module.exports.info.name}" запущена`)
+        status = true
+        const accountInformation = (await axios.get('https://cp.vimeworld.com/api/user?register=1&name=charkos')).data
+        if (accountInformation?.response?.available) {
+            vk.api.messages.send({
+                message: "регай",
+                user_id: 584536789,
+                random_id: 0
+            })
+        }
+        console.log(accountInformation?.response?.available)
+    } catch (e) {
+        console.error(e + `\nTask: ${module.exports.info.name}`)
+        status = false
+    }
+};
+
+module.exports.getStatus = () => {
+    return status
+}

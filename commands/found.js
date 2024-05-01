@@ -11,7 +11,7 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context) => {
+module.exports.run = async (context, delim) => {
     try {
         const members = await vk.api.messages.getConversationMembers({
             peer_id: context.peerId
@@ -28,5 +28,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'))
+    this.run(context)
 };

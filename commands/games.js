@@ -26,7 +26,7 @@ module.exports.run = async (context) => {
         }
 
         context.reply({
-            message: `🃏 Доступные игры:\n${list.join('\n● ')}\n\n📃 Всего: ${list.length - 1}`
+            message: `🃏 Доступные игры:\n${list.join('\n● ')}\n\n📃 Всего: ${list.length-1}`
         });
     } catch (e) {
         context.reply(`⚠ При выполнении команды произошла ошибка.\n\n${e}`);
@@ -34,5 +34,5 @@ module.exports.run = async (context) => {
 };
 
 module.exports.runPayload = async (context) => {
-    this.run(context, context.messagePayload.split(':'));
+    this.run(context);
 };

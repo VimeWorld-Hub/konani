@@ -18,18 +18,31 @@ module.exports.info = {
     help: true
 };
 
-module.exports.run = async (context, params) => {
+module.exports.run = async (context, delim) => {
     try {
-        if (!params || !params[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${params[0]} ${this.info.usage}`)
+        if (!delim) delim = context.text.split(" ")
 
-        const symbols = params[1].split('')
-        if (!await messages.testUsername(params[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
+        if (!delim || !delim[1]) return context.reply(`🔎 Вы забыли один из аргументов этой команды.\n\nПравильное использование: ${delim[0]} ${this.info.usage}`)
+
+        if (delim[1].toLowerCase().includes("@me")) {
+            const get = await new messages.User().getNick(context)
+            if (get) {
+                delim[1] = get
+            } else {
+                return context.send({
+                    message: `📲 Вы ещё не привязали свой никнейм.\n\nВоспользуйтесь командой: /setnick <ник>`,
+                    reply_to: context.message.id
+                })
+            }
+        }
+        const symbols = delim[1].split('')
+        if (!await messages.testUsername(delim[1])) return context.reply(`⚠ Никнейм может состоять только из латиницы, цифр и _`)
 
         if ((symbols.length < 3 || symbols.length > 16) && symbols[0] !== "=")
             return context.reply(`⚠ Никнейм должен быть длиной от 3-х до 16-и символов`)
 
         new Promise(() => {
-            const player = VimeLibrary.User.achievements(params[1], "nick")
+            const player = VimeLibrary.User.achievements(delim[1], "nick")
             const ach = VimeLibrary.Misc.achievements()
 
             Promise.all([player, ach]).then(async function (values) {
@@ -37,8 +50,8 @@ module.exports.run = async (context, params) => {
 
                 for (const achm of values[0].achievements) {
                     for (const cat in values[1]) {
-                        if (cat === "token") continue
-                        for (const ac of values[1][cat]) {
+                        if (cat == "token") continue
+                        for (ac of values[1][cat]) {
                             if (ac.id === achm.id) {
                                 list.push([cat, ac.title])
                             }
@@ -94,6 +107,7 @@ module.exports.run = async (context, params) => {
     }
 }
 
-module.exports.runPayload = async (context, params) => {
-    this.run(context, params)
+module.exports.runPayload = async (context) => {
+    const delim = context.messagePayload.split(':')
+    this.run(context, delim)
 }
